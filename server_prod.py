@@ -93,7 +93,7 @@ async def generate(req: GenerateRequest):
 
     def stream():
         with client.messages.stream(
-            model="claude-sonnet-4-5",
+            model="claude-3-5-sonnet-20241022",
             max_tokens=2500,
             system=SYSTEM_PROMPT,
             messages=[{
@@ -117,7 +117,7 @@ async def generate_section(req: SectionRequest):
 
     def stream():
         with client.messages.stream(
-            model="claude-sonnet-4-5",
+            model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             system=req.system,
             messages=[{"role": "user", "content": req.user}]
