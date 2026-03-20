@@ -92,18 +92,22 @@ async def generate(req: GenerateRequest):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     def stream():
-        with client.messages.stream(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=2500,
-            system=SYSTEM_PROMPT,
-            messages=[{
-                "role": "user",
-                "content": f"Training topic: {req.topic}\n\nWhat participants need to learn: {req.learningGoals}"
-            }]
-        ) as s:
-            for text in s.text_stream:
-                yield f"data: {json.dumps({'text': text})}\n\n"
-        yield f"data: {json.dumps({'done': True})}\n\n"
+        try:
+            with client.messages.stream(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=2500,
+                system=SYSTEM_PROMPT,
+                messages=[{
+                    "role": "user",
+                    "content": f"Training topic: {req.topic}\n\nWhat participants need to learn: {req.learningGoals}"
+                }]
+            ) as s:
+                for text in s.text_stream:
+                    yield f"data: {json.dumps({'text': text})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            print(f"ERROR in /api/generate: {e}", flush=True)
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return StreamingResponse(
         stream(),
@@ -116,15 +120,19 @@ async def generate_section(req: SectionRequest):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     def stream():
-        with client.messages.stream(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=1000,
-            system=req.system,
-            messages=[{"role": "user", "content": req.user}]
-        ) as s:
-            for text in s.text_stream:
-                yield f"data: {json.dumps({'text': text})}\n\n"
-        yield f"data: {json.dumps({'done': True})}\n\n"
+        try:
+            with client.messages.stream(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1000,
+                system=req.system,
+                messages=[{"role": "user", "content": req.user}]
+            ) as s:
+                for text in s.text_stream:
+                    yield f"data: {json.dumps({'text': text})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            print(f"ERROR in /api/generate-section: {e}", flush=True)
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return StreamingResponse(
         stream(),
